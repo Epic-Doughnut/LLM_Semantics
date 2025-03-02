@@ -1,0 +1,40 @@
+Here are five book title recommendations based on each description, in a comma-separated list:
+
+1. "While working at pleasant but mundane summer jobs in San Francisco, fifteen-year-old twins, Sophie and Josh, suddenly find themselves caught up in the deadly, centuries-old struggle between rival alchemists, Nicholas Flamel and John Dee, over the possession of an ancient and powerful book holding the secret formulas for alchemy and everlasting life." 
+Percy Jackson and the Lightning Thief, The Golden Compass, The Magicians, Miss Peregrine's Home for Peculiar Children, The Secrets of the Immortal Nicholas Flamel
+
+2. "Madeleine L'Engle's Newbery Award-winning masterpiece has entranced young people since it was first published more than 50 years ago. With its mix of science fiction and fantas--including quantum physic--plus a strong and smart female protagonist, it holds a unique place in the annals of children's literature." 
+A Wrinkle in Time, The Time Traveler's Wife, The City of Ember, When You Reach Me, The Girl Who Drank the Moon
+
+3. "In a society that purges thirteen-year-olds who are creative, identical twins Aaron and Alex are separated, one to attend University while the other, supposedly Eliminated, finds himself in a wondrous place where youths hone their abilities and learn magic." 
+Divergent, The Giver, The Hunger Games, The Maze Runner, The Darkest Minds
+
+4. "Moving in with a police detective's mother for protection after her grandmother suffers a stroke and she witnesses an armed robbery, young Poppy tries to manage her worries while navigating a strained new friendship and hatching a plan to save the life of a beautiful dog." 
+Because of Winn-Dixie, The Tale of Despereaux, The One and Only Ivan, Isle of the Lost, Walk Two Moons
+
+5. "Born in Nazi Germany in 1936, Max is raised as the perfect Aryan but questions his teachings upon learning that his friend Lukas, a Polish boy snatched from his home to be 'Germanized,' is secretly Jewish." 
+The Boy in the Striped Pajamas, The Book Thief, Night, The Diary of a Young Girl, Man's Search for Meaning
+
+6. "Four former Christian teenagers find themselves alone and afraid following the Rapture when God spirits His followers away to Heaven." 
+Left Behind, The Shack, The Screwtape Letters, This Present Darkness, Piercing the Darkness
+
+7. "Sixteen-year-old Hazel, a stage IV thyroid cancer patient, has accepted her terminal diagnosis until a chance meeting with a boy at cancer support group forces her to reexamine her perspective on love, loss, and life." 
+The Fault in Our Stars, Me and Earl and the Dying Girl, A Walk to Remember, The Sun is Also a Star, Everything Everything
+
+8. "Alternate cover edition for ISBN: 9780142406632 and here. They have always scared him in the past -- the Rangers, with their dark cloaks and shadowy ways. The villagers believe the Rangers practice magic that makes them invisible to ordinary people." 
+The Ranger's Apprentice, The Inheritance Cycle, Fablehaven, The Beyonders, The Sisters Grimm
+
+9. "Science fiction meets murder mystery in this edge-of-your-seat thriller. The Lost Causes are five teens with serious problems and only one thing in common: people have written them off." 
+One of Us is Lying, The Naturals, The Darkest Corners, The Walls Around Us, The Diviners
+
+10. "With the ocean on the brink of chaos, a young shark Gray and his best friend Barkley, exiled from the safety of their peaceful reef home, will have to battle ferocious shivers, or join them, to survive." 
+The Shark Whisperer, The Old Man and the Sea, The Underneath, The Sea of Monsters, The Fisherman
+
+11. "For Adam Reed, basketball is a passport. Adam's basketball skills have taken him from an orphanage in Poland to a loving adoptive mother in Minnesota." 
+The Crossover, The Basketball Diaries, Hoop Dreams, The Rebound, Full Court Press
+
+12. "Excitedly embarking on his course of training at the Jedi Academy in spite of his older sister's jealousy, Victor Starspeeder struggles with Master Yoda's assignments, which include a requirement to join the drama club to channel his high energy." 
+Star Wars: Jedi Academy, Zita the Spacegirl, Captain Underpants, Diary of a Wimpy Kid, The Magic Tree House
+
+13. "Isabel has been sheltered in a high-society world. All that changes, when she breaches an invisible barrier, and steps into a magical and dangerous city where war rages between the fairies of the Seelie and Unseelie Courts." 
+The Iron Fey, The Mortal Instruments, The Infernal Devices, The Secrets of the Imm
