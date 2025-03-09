@@ -8397,7 +8397,7 @@ authentication	trust	0.766
 compassion	trust	0.759
 safekeeping	trust	0.758
 love	trust	0.758
-beloved	trust	0.758	
+beloved	trust	0.758
 trusts	trust	0.758
 moral	trust	0.758
 reputable	trust	0.758
