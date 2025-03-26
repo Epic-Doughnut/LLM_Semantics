@@ -1,11 +1,17 @@
-import mysql.connector
+import MySQLdb as mysql
 import pandas as pd
 
-def establish_db():
-    mydb = mysql.connector.connect(
+def create_db():
+    db = establish_connection()
+    c = db.cursor()
+    c.execute("CREATE DATABASE IF NOT EXISTS books")
+    db.close()
+
+def establish_connection():
+    mydb = mysql.connect(
         host="localhost",
-        user="admin",
-        password="password"
+        user="user",
+        passwd="password"
     )
     
     return mydb
@@ -46,6 +52,5 @@ def clean_csv(path:str):
 
 
 if __name__ == '__main__':
-    clean_csv("../data/archive/")
-    # mydb = establish_db()
-    # print(mydb)
+    # clean_csv("../data/archive/")
+    create_db()
