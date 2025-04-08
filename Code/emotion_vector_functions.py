@@ -1,6 +1,6 @@
 
 import pandas as pd
-from operator import itemgetter
+# from operator import itemgetter
 
 # nltk is what does all the magic language parsing
 from nltk.corpus import wordnet
@@ -21,7 +21,7 @@ stops:list[str] = list(set(ENGLISH_STOP_WORDS))
 
 
 # define the file which contains all the words with their associated emotion + intensities
-fileEmotion = "emotion_itensity.txt"
+fileEmotion = "./Code/emotion_itensity.txt"
 table = pd.read_csv(fileEmotion,  names=["word", "emotion", "intensity"], sep='\t')
 
 # create a dictionary with the word/emotion/score
