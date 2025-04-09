@@ -8,6 +8,17 @@ import nltk
 import pandas as pd
 import ast
 import math
+from bs4 import BeautifulSoup
+from urllib.parse import quote_plus
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import TimeoutException
+import ast
 
 
 class Llama_Test:
@@ -149,13 +160,14 @@ class Llama_Test:
             key = api_file.read()
         client = Groq(api_key=key)
         completion = client.chat.completions.create(
-            # Options: llama-3.3-70b-versatile, mixtral-8x7b-32768, mistral-saba-24b
-            model="gemma2-9b-it",
+            # Options: llama-3.3-70b-versatile, mixtral-8x7b-32768, mistral-saba-24b, gemma2-9b-it
+            model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "user",
                     # Previous Description: "For all of the following list of book descriptions, without looking up the corresponding book or recommended age online, print 5 book recommendations followed by the given description on each line (of the format description:...description here...), separated by commas (ex: book_title_1, book_title_2,...book_title_5, description...and go on to the next line) for someone who read the book of the given description. Do this for ALL descriptions, even though the list is long. I'm writing this to a csv file. Output nothing else as it might mess up my program when I go in and read the csv file. Here are the descriptions: " + descriptions
-                    "content": "For each of the following book descriptions, without looking up the corresponding book or recommended age online, print a 6 column csv file with the first five columns being five book recommendations for another reader of the same age as the one who enjoyed that book, and the sixth column being the original book description. (Example of one line: Book Recommendation 1, Book Recommendation 2, Book Recommendation 3, Book Recommendation 4, Book Recommendation 5, Original Book description). Here are the descriptions: " + descriptions
+                    # Second Previous Description: ""For each of the following book descriptions, without looking up the corresponding book or recommended age online, print a 6 column csv file with the first five columns being five book recommendations for another reader of the same age as the one who enjoyed that book, and the sixth column being the original book description. (Example of one line: Book Recommendation 1, Book Recommendation 2, Book Recommendation 3, Book Recommendation 4, Book Recommendation 5, Original Book description). Here are the descriptions: " + Descriptions
+                    "content": "For each of the following book descriptions, without looking up the corresponding book or recommended age online, I want you to print an 21 columns of a csv file (Which I will save to a CSV file) with the first 20 columns being 20 book title recommendations ranked by how good they are for another reader of the same age as the one who enjoyed that book, and the 21st column being the original book description. (Example of one line: Top Recommendation, Second Best Recommendation, 3rd Best Recommendation,..., 20th description, Original Book description). Do this for all book descriptions. Here are the descriptions: " + descriptions
                 },
             ],
             temperature=1,
@@ -366,15 +378,177 @@ class Llama_Test:
                         of.write(f"Input Description vector: {vectors[-1]}\n")
                         of.write(f"Distance between emotion vectors: {distance}\n\n")
 
-
+    def get_book_page(self, book_title, headers, base_url):
+        search_url = f"{base_url}/search?utf8=%E2%9C%93&q={quote(book_title)}"
+        response = requests.get(search_url, headers=headers)
+        if response.status_code != 200:
+            raise Exception("Failed to fetch search page")
         
+        soup = BeautifulSoup(response.text, "html.parser")
+        first_result = soup.select_one(".bookTitle")  # Finds first book link
+        if not first_result:
+            raise Exception("No book results found")
+        
+        return base_url + first_result["href"]
+
+    def get_similar_books_url(book_url):
+        """Use Selenium to extract the similar books URL from the book's page."""
+        # Set up the Service object with the ChromeDriver path
+        service = Service(ChromeDriverManager().install())
+        # Initialize the WebDriver with the service
+        driver = webdriver.Chrome(service=service)
+        try:
+            driver.get(book_url)
+            similar_link = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//a[@aria-label='Tap to show all similar books']"))
+            )
+            return similar_link.get_attribute('href')
+        finally:
+            driver.quit()
+
+    def get_similar_books(self, similar_url, headers):
+        response = requests.get(similar_url, headers=headers)
+        if response.status_code != 200:
+            raise Exception("Failed to fetch similar books page")
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        book_elements = soup.select(".coverWrapper + a")[:10]  # Selects first 10 books
+        
+        return [book.get_text(strip=True) for book in book_elements]
+
+    def get_recommended_books(self, book_title):
+        headers = {"User-Agent": "Mozilla/5.0"}  # Define headers here
+        base_url = "https://www.goodreads.com"  # Define base_url here
+        book_url = self.get_book_page(book_title, headers, base_url)
+        similar_url = self.get_similar_books_page(book_url, headers, base_url)
+        return self.get_similar_books(similar_url, headers)
+
+    def find_cosine_similarity(self, ev1, ev2):
+        """Calculate the cosine similarity between two emotion vectors."""
+        dot_product = sum(ev1[key] * ev2.get(key, 0) for key in ev1)
+        magnitude1 = math.sqrt(sum(value ** 2 for value in ev1.values()))
+        magnitude2 = math.sqrt(sum(value ** 2 for value in ev2.values()))
+        if magnitude1 == 0 or magnitude2 == 0:
+            return 0.0
+        return dot_product / (magnitude1 * magnitude2)
+
+# def find_cosine_similarity(ev1, ev2):
+#     """
+#     Calculate the cosine similarity between two emotion vectors represented as dictionaries.
+    
+#     Args:
+#         ev1 (dict): First emotion vector.
+#         ev2 (dict): Second emotion vector.
+    
+#     Returns:
+#         float: Cosine similarity score.
+#     """
+#     dot_product = sum(ev1[key] * ev2.get(key, 0) for key in ev1)
+#     magnitude1 = math.sqrt(sum(value ** 2 for value in ev1.values()))
+#     magnitude2 = math.sqrt(sum(value ** 2 for value in ev2.values()))
+#     if magnitude1 == 0 or magnitude2 == 0:
+#         return 0.0
+#     return dot_product / (magnitude1 * magnitude2)
+
+# def find_top_similar_books(input_vector, target_age, file_path):
+#     """
+#     Find the top 20 books with emotion vectors most similar to the input vector,
+#     for entries where the age is within 1 year of the target age.
+
+#     Args:
+#         input_vector (dict): Input emotion vector with ~10 dimensions (e.g., {'happy': 0.5, 'sad': 0.3, ...}).
+#         target_age (float): Target age to filter entries (e.g., 16.5).
+#         file_path (str): Path to the CSV file containing book data.
+
+#     Returns:
+#         list: List of tuples (book_title, similarity) for the top 20 most similar books.
+#               Returns fewer than 20 if not enough entries match the age criteria.
+#               Returns empty list if no entries match or file cannot be processed.
+#     """
+#     try:
+#         # Read CSV with extra columns to handle potential splits in emotion vector
+#         df = pd.read_csv(file_path, header=None, names=range(20), quotechar='"', escapechar=None)
+
+#         # Reconstruct emotion vector by joining columns from index 7 onwards
+#         emotion_vector_col = df.iloc[:, 7:].apply(lambda row: ','.join(row.dropna().astype(str)), axis=1)
+
+#         # Create corrected DataFrame with columns 0-6 and reconstructed emotion vector
+#         df_corrected = df.iloc[:, :7].copy()
+#         df_corrected['emotion_vector'] = emotion_vector_col
+
+#         # Assign meaningful column names based on assumed CSV structure
+#         df_corrected.columns = ['isbn', 'id', 'book_title', 'author', 'description', 'rating', 'age', 'emotion_vector']
+
+#         # Convert age to numeric, coercing invalid values to NaN
+#         df_corrected['age'] = pd.to_numeric(df_corrected['age'], errors='coerce')
+
+#         # Filter rows where age is within 1 year of target_age
+#         df_filtered = df_corrected[
+#             (df_corrected['age'] >= target_age - 1) & 
+#             (df_corrected['age'] <= target_age + 1)
+#         ].copy()
+
+#         # Define a safe parsing function for emotion vectors
+#         def safe_literal_eval(x):
+#             try:
+#                 return ast.literal_eval(x)
+#             except (ValueError, SyntaxError):
+#                 return {}
+
+#         # Parse emotion vector strings into dictionaries
+#         df_filtered['emotion_dict'] = df_filtered['emotion_vector'].apply(safe_literal_eval)
+
+#         # Calculate cosine similarity for each filtered entry
+#         df_filtered['similarity'] = df_filtered['emotion_dict'].apply(
+#             lambda x: find_cosine_similarity(input_vector, x)
+#         )
+
+#         # Sort by similarity in descending order
+#         df_sorted = df_filtered.sort_values(by='similarity', ascending=False)
+
+#         # Select top 20 entries (or fewer if less than 20 match)
+#         top_20 = df_sorted.head(20)
+
+#         # Return list of (book_title, similarity) tuples
+#         result = list(zip(top_20['book_title'], top_20['similarity']))
+#         return result
+
+#     except FileNotFoundError:
+#         print(f"Error: File '{file_path}' not found.")
+#         return []
+#     except Exception as e:
+#         print(f"Error processing the file: {e}")
+#         return []
+
+# # Example usage
+# if __name__ == "__main__":
+#     # Example input vector and age
+#     sample_emotion_vector = {'Anger': 0.020380372416114567, 'Anticipation': 0.03298805024710437, 'Disgust': 0.02128310662974127, 'Fear': 0.03298805024710437, 'Joy': 0.09945376929785639, 'Sadness': 0.042719219058402313, 'Surprise': 0.0016677632082255918, 'Trust': 0.15179705310831282, 'Objective': 0.5967226157871384}
+#     sample_age = 16.0
+#     csv_path = r'C:\Users\natha\Programming\LLM_Research\LLM_Semantics\Data\Teenager_GoodReads_Emotion.csv'
+
+#     # Call the function
+#     top_books = find_top_similar_books(sample_emotion_vector, sample_age, csv_path)
+
+#     # Display results
+#     if top_books:
+#         print("Top matching books:")
+#         for i, (title, similarity) in enumerate(top_books, 1):
+#             print(f"{i}. {title} (Similarity: {similarity:.4f})")
+#     else:
+#         print("No matching books found.")
             
     
 
             
 # print(Llama_Test.Cleanup_Description(r"One thousand years after a cataclysmic event leaves humanity on the brink of extinction, the\n survivors take refuge in continuums designed to sustain the human race until repopulation of Earth becomes possible. Against this backdrop, a group of yinuums designed to sustain the human race until repopulation of Earth becomes possible. Against this backdrop, a group of young friends in \nthe underwater Thirteenth Continuum dream about life outside their totalitarian existence, an idea that has been outlawed for centuries. When a shocking discovery turns the dream into a reality, they must decide if they will risk their own extinction to experience something no one has for generations, the Surface-- Provided by publisher."))
-Llama_Test.Filter_Sample(r"C:\Users\natha\Programming\LLM_Research\LLM_Semantics\Code\complete_pl_output.csv", 12, 19)
-Llama_Test.Recommend_for_Sample("Sample_Data.txt", "LLM_Recommendations.txt")
-Llama_Test.Convert_to_Vectors("LLM_Recommendations.txt", "Calculated_Emotion_Vectors.csv")
-Llama_Test.Determine_Data_Difference("Calculated_Emotion_Vectors.csv", "Results.txt")
+# Llama_Test.Filter_Sample(r"C:\Users\natha\Programming\LLM_Research\LLM_Semantics\Code\complete_pl_output.csv", 12, 19)
+# Llama_Test.Recommend_for_Sample("Sample_Data.txt", "LLM_Recommendations.txt")
+# Llama_Test.Convert_to_Vectors("LLM_Recommendations.txt", "Calculated_Emotion_Vectors.csv")
+# Llama_Test.Determine_Data_Difference("Calculated_Emotion_Vectors.csv", "Results.txt")
+# Test_Object = Llama_Test()
+# print(Test_Object.get_recommended_books("Harry Potter and the Sorcerer's Stone"))
+# ev1 = {'Anger': 0.04736088869499523, 'Anticipation': 0.0941099483403472, 'Disgust': 0.03619899872845963, 'Fear': 0.0443336649624124, 'Joy': 0.08280441155346056, 'Sadness': 0.02848463245034874, 'Surprise': 0.032543985188416745, 'Trust': 0.0968179569165944, 'Objective': 0.537345513164965}
+# ev2 = {'Anger': 0.0, 'Anticipation': 0.09648702533112835, 'Disgust': 0.0, 'Fear': 0.021374588504397014, 'Joy': 0.10542787815093578, 'Sadness': 0.01169188445667125, 'Surprise': 0.03780350215600513, 'Trust': 0.10127814784476762, 'Objective': 0.6259369735560947}
+# print(Llama_Test.find_cosine_similarity(ev1, ev2))
 
