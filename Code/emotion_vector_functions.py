@@ -74,6 +74,12 @@ def calculateEmotion(emotions:dict[str,float], word:str):
     emotions["Surprise"] += getEmotionItensity(word, "surprise")
     emotions["Trust"] += getEmotionItensity(word, "trust")
     
+def cleanString(text:str):        
+    clean = re.sub("[^a-zA-Z]+", " ", text) # replace all non-letters with a space
+    clean = re.sub("[^a-zA-Z ]+", '', clean).lower() #  convert to lowercase
+    
+    return clean
+    
 #get the emotion vector of a given text
 def getEmotionVector(text:str, removeObj = False, useSynset = True) -> dict[str, float]:
     
@@ -89,9 +95,7 @@ def getEmotionVector(text:str, removeObj = False, useSynset = True) -> dict[str,
                 "Objective": 0.0}
     
     # parse the description
-    str = re.sub("[^a-zA-Z]+", " ", text) # replace all non-letters with a space
-    pat = re.compile(r'[^a-zA-Z ]+')
-    str = re.sub(pat, '', str).lower() #  convert to lowercase
+    str = cleanString(text)
 
     # split string into words
     tokens = str.split()
