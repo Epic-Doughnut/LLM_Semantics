@@ -167,7 +167,7 @@ class Llama_Test:
                     "role": "user",
                     # Previous Description: "For all of the following list of book descriptions, without looking up the corresponding book or recommended age online, print 5 book recommendations followed by the given description on each line (of the format description:...description here...), separated by commas (ex: book_title_1, book_title_2,...book_title_5, description...and go on to the next line) for someone who read the book of the given description. Do this for ALL descriptions, even though the list is long. I'm writing this to a csv file. Output nothing else as it might mess up my program when I go in and read the csv file. Here are the descriptions: " + descriptions
                     # Second Previous Description: ""For each of the following book descriptions, without looking up the corresponding book or recommended age online, print a 6 column csv file with the first five columns being five book recommendations for another reader of the same age as the one who enjoyed that book, and the sixth column being the original book description. (Example of one line: Book Recommendation 1, Book Recommendation 2, Book Recommendation 3, Book Recommendation 4, Book Recommendation 5, Original Book description). Here are the descriptions: " + Descriptions
-                    "content": "For each of the following book descriptions, without looking up the corresponding book or recommended age online, I want you to print an 21 columns of a csv file (Which I will save to a CSV file) with the first 20 columns being 20 book title recommendations ranked by how good they are for another reader of the same age as the one who enjoyed that book, and the 21st column being the original book description. (Example of one line: Top Recommendation, Second Best Recommendation, 3rd Best Recommendation,..., 20th description, Original Book description). Do this for all book descriptions. Here are the descriptions: " + descriptions
+                    "content": "For each of the following 5 book descriptions, without looking up the corresponding book or recommended age online, I want you to print an 21 columns of a csv file (Which I will save to a CSV file) with the first 20 columns being 20 book title recommendations ranked by how good they are for another reader of the same age as the one who enjoyed that book, and the 21st column being the original book description. (Example of one line: Top Recommendation, Second Best Recommendation, 3rd Best Recommendation,..., 20th description, Original Book description). Do this for all book descriptions. Here are the descriptions: " + descriptions
                 },
             ],
             temperature=1,
@@ -432,115 +432,141 @@ class Llama_Test:
             return 0.0
         return dot_product / (magnitude1 * magnitude2)
 
-# def find_cosine_similarity(ev1, ev2):
-#     """
-#     Calculate the cosine similarity between two emotion vectors represented as dictionaries.
-    
-#     Args:
-#         ev1 (dict): First emotion vector.
-#         ev2 (dict): Second emotion vector.
-    
-#     Returns:
-#         float: Cosine similarity score.
-#     """
-#     dot_product = sum(ev1[key] * ev2.get(key, 0) for key in ev1)
-#     magnitude1 = math.sqrt(sum(value ** 2 for value in ev1.values()))
-#     magnitude2 = math.sqrt(sum(value ** 2 for value in ev2.values()))
-#     if magnitude1 == 0 or magnitude2 == 0:
-#         return 0.0
-#     return dot_product / (magnitude1 * magnitude2)
+    def find_top_similar_books(self, input_vector, target_age, file_path=r"C:\Users\natha\Programming\LLM_Research\LLM_Semantics\Data\Teenager_GoodReads_Emotion.csv"):
+        """
+        Find the top 20 books with emotion vectors most similar to the input vector,
+        for entries where the age is within 1 year of the target age.
 
-# def find_top_similar_books(input_vector, target_age, file_path):
-#     """
-#     Find the top 20 books with emotion vectors most similar to the input vector,
-#     for entries where the age is within 1 year of the target age.
+        Args:
+            input_vector (dict): Input emotion vector with ~10 dimensions (e.g., {'happy': 0.5, 'sad': 0.3, ...}).
+            target_age (float): Target age to filter entries (e.g., 16.5).
+            file_path (str): Path to the CSV file containing book data.
 
-#     Args:
-#         input_vector (dict): Input emotion vector with ~10 dimensions (e.g., {'happy': 0.5, 'sad': 0.3, ...}).
-#         target_age (float): Target age to filter entries (e.g., 16.5).
-#         file_path (str): Path to the CSV file containing book data.
+        Returns:
+            dict: Dictionary mapping book titles (str) to their cosine similarity scores (float)
+                for the top 20 most similar books. Returns fewer than 20 if not enough entries match.
+                Returns empty dict if no entries match or file cannot be processed.
+        """
+        try:
+            # Read the CSV file
+            df = pd.read_csv(file_path, header=None, quotechar='"', escapechar=None)
 
-#     Returns:
-#         list: List of tuples (book_title, similarity) for the top 20 most similar books.
-#               Returns fewer than 20 if not enough entries match the age criteria.
-#               Returns empty list if no entries match or file cannot be processed.
-#     """
-#     try:
-#         # Read CSV with extra columns to handle potential splits in emotion vector
-#         df = pd.read_csv(file_path, header=None, names=range(20), quotechar='"', escapechar=None)
+            # Assign column names based on the specified structure
+            df.columns = ['ISBN','ID','Title','Author','Description','Average_Rating','Age','EmotionVector']
 
-#         # Reconstruct emotion vector by joining columns from index 7 onwards
-#         emotion_vector_col = df.iloc[:, 7:].apply(lambda row: ','.join(row.dropna().astype(str)), axis=1)
+            # Initialize lists to store filtered data
+            book_titles = []
+            similarities = []
+            seen_titles = set()  # To track duplicates
 
-#         # Create corrected DataFrame with columns 0-6 and reconstructed emotion vector
-#         df_corrected = df.iloc[:, :7].copy()
-#         df_corrected['emotion_vector'] = emotion_vector_col
+            # Process each row individually to handle errors and duplicates
+            for idx, row in df.iterrows():
+                try:
+                    # Extract and validate age
+                    age = pd.to_numeric(row['Age'], errors='coerce')
+                    if pd.isna(age):
+                        print(f"Error at line {idx + 2}: Invalid age value '{row['Age']}'. Skipping this line.")
+                        continue
 
-#         # Assign meaningful column names based on assumed CSV structure
-#         df_corrected.columns = ['isbn', 'id', 'book_title', 'author', 'description', 'rating', 'age', 'emotion_vector']
+                    # Check if age is within 1 year of target_age
+                    if not (target_age - 1 <= age <= target_age + 1):
+                        continue
 
-#         # Convert age to numeric, coercing invalid values to NaN
-#         df_corrected['age'] = pd.to_numeric(df_corrected['age'], errors='coerce')
+                    # Extract book title
+                    book_title = row['Title']
+                    if pd.isna(book_title) or not isinstance(book_title, str) or not book_title.strip():
+                        print(f"Error at line {idx + 2}: Invalid book title '{book_title}'. Skipping this line.")
+                        continue
 
-#         # Filter rows where age is within 1 year of target_age
-#         df_filtered = df_corrected[
-#             (df_corrected['age'] >= target_age - 1) & 
-#             (df_corrected['age'] <= target_age + 1)
-#         ].copy()
+                    # Check for duplicates
+                    if book_title in seen_titles:
+                        print(f"Duplicate book title '{book_title}' found at line {idx + 2}. Skipping this line.")
+                        continue
+                    seen_titles.add(book_title)
 
-#         # Define a safe parsing function for emotion vectors
-#         def safe_literal_eval(x):
-#             try:
-#                 return ast.literal_eval(x)
-#             except (ValueError, SyntaxError):
-#                 return {}
+                    # Parse emotion vector
+                    emotion_vector_str = row['EmotionVector']
+                    try:
+                        emotion_dict = ast.literal_eval(emotion_vector_str)
+                        if not isinstance(emotion_dict, dict) or not emotion_dict:
+                            print(f"Error at line {idx + 2}: Emotion vector '{emotion_vector_str}' is not a valid dictionary. Skipping this line.")
+                            continue
+                    except (ValueError, SyntaxError) as e:
+                        print(f"Error at line {idx + 2}: Failed to parse emotion vector '{emotion_vector_str}'. {str(e)}. Skipping this line.")
+                        continue
 
-#         # Parse emotion vector strings into dictionaries
-#         df_filtered['emotion_dict'] = df_filtered['emotion_vector'].apply(safe_literal_eval)
+                    # Calculate cosine similarity
+                    similarity = self.find_cosine_similarity(input_vector, emotion_dict)
 
-#         # Calculate cosine similarity for each filtered entry
-#         df_filtered['similarity'] = df_filtered['emotion_dict'].apply(
-#             lambda x: find_cosine_similarity(input_vector, x)
-#         )
+                    # Store the result
+                    book_titles.append(book_title)
+                    similarities.append(similarity)
 
-#         # Sort by similarity in descending order
-#         df_sorted = df_filtered.sort_values(by='similarity', ascending=False)
+                except Exception as e:
+                    print(f"Error at line {idx + 2}: Unexpected error processing row: {str(e)}. Skipping this line.")
+                    continue
 
-#         # Select top 20 entries (or fewer if less than 20 match)
-#         top_20 = df_sorted.head(20)
+            if not book_titles:
+                print("No valid entries found within 1 year of the target age after processing.")
+                return {}
 
-#         # Return list of (book_title, similarity) tuples
-#         result = list(zip(top_20['book_title'], top_20['similarity']))
-#         return result
+            # Create a DataFrame from the filtered data
+            df_filtered = pd.DataFrame({
+                'Title': book_titles,
+                'similarity': similarities
+            })
 
-#     except FileNotFoundError:
-#         print(f"Error: File '{file_path}' not found.")
-#         return []
-#     except Exception as e:
-#         print(f"Error processing the file: {e}")
-#         return []
+            # Sort by similarity in descending order (closest to 1 first)
+            df_sorted = df_filtered.sort_values(by='similarity', ascending=False)
 
-# # Example usage
-# if __name__ == "__main__":
-#     # Example input vector and age
-#     sample_emotion_vector = {'Anger': 0.020380372416114567, 'Anticipation': 0.03298805024710437, 'Disgust': 0.02128310662974127, 'Fear': 0.03298805024710437, 'Joy': 0.09945376929785639, 'Sadness': 0.042719219058402313, 'Surprise': 0.0016677632082255918, 'Trust': 0.15179705310831282, 'Objective': 0.5967226157871384}
-#     sample_age = 16.0
-#     csv_path = r'C:\Users\natha\Programming\LLM_Research\LLM_Semantics\Data\Teenager_GoodReads_Emotion.csv'
+            # Select top 20 entries (or fewer if less than 20 match)
+            top_20 = df_sorted.head(20)
 
-#     # Call the function
-#     top_books = find_top_similar_books(sample_emotion_vector, sample_age, csv_path)
+            # Create a dictionary mapping book titles to similarity scores
+            Output = ""
+            result = dict(zip(top_20['Title'], top_20['similarity']))
+            for i, (title, similarity) in enumerate(result.items(), 1):
+                Output += f"{i}. {title} (Similarity: {similarity:.4f})"
+            return result
 
-#     # Display results
-#     if top_books:
-#         print("Top matching books:")
-#         for i, (title, similarity) in enumerate(top_books, 1):
-#             print(f"{i}. {title} (Similarity: {similarity:.4f})")
-#     else:
-#         print("No matching books found.")
-            
-    
+        except FileNotFoundError:
+            print(f"Error: File '{file_path}' not found.")
+            return {}
+        except Exception as e:
+            print(f"Error processing the file: {e}")
+            return {}
 
-            
+    # # Example usage
+    # if __name__ == "__main__":
+    #     # Example input vector and age
+    #     sample_emotion_vector = {'Anger': 0.014299376616268058, 'Anticipation': 0.063514265300745, 'Disgust': 0.00892495735446797, 'Fear': 0.03217397280838508, 'Joy': 0.07946445720684969, 'Sadness': 0.027790438634022925, 'Surprise': 0.028688857354523756, 'Trust': 0.10314579591498067, 'Objective': 0.6419978788097568}
+    #     sample_age = 16
+
+    #     # Call the function
+    #     top_books = find_top_similar_books(sample_emotion_vector, sample_age)
+
+    #     # Display results
+    #     if top_books:
+    #         print("\nTop matching books:")
+    #         for i, (title, similarity) in enumerate(top_books.items(), 1):
+    #             print(f"{i}. {title} (Similarity: {similarity:.4f})")
+    #     else:
+    #         print("No matching books found.")
+
+with open("Conclusive_Data_Llama.csv") as inf:
+    with open("Final_Conclusive_Llama.txt", "w") as of:
+        ages = [15, 16, 13, 14, 15, 16, 17, 18, 13, 14]
+        Llama_Object = Llama_Test()
+        for i, line in enumerate(inf.readlines()):
+            if line[0] == "{":
+                index = ages[int(i/2)]
+                print(index)
+                vector = ast.literal_eval(line)
+                print(vector)
+                of.write(str(Llama_Object.find_top_similar_books(vector, ages[int(i/2)])) + "\n")
+            else:
+                of.write(line)
+
 # print(Llama_Test.Cleanup_Description(r"One thousand years after a cataclysmic event leaves humanity on the brink of extinction, the\n survivors take refuge in continuums designed to sustain the human race until repopulation of Earth becomes possible. Against this backdrop, a group of yinuums designed to sustain the human race until repopulation of Earth becomes possible. Against this backdrop, a group of young friends in \nthe underwater Thirteenth Continuum dream about life outside their totalitarian existence, an idea that has been outlawed for centuries. When a shocking discovery turns the dream into a reality, they must decide if they will risk their own extinction to experience something no one has for generations, the Surface-- Provided by publisher."))
 # Llama_Test.Filter_Sample(r"C:\Users\natha\Programming\LLM_Research\LLM_Semantics\Code\complete_pl_output.csv", 12, 19)
 # Llama_Test.Recommend_for_Sample("Sample_Data.txt", "LLM_Recommendations.txt")
