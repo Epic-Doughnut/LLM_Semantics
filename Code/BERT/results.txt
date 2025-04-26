@@ -1,0 +1,135 @@
+Avg accuracy = 0.3933
+
+new selected:
+4 correct, 5 partial, 1 incorrect
+score = 6.5/10
+
+To Kill a Mockingbird - 16-17(2) = CORRECT(2)
+The Lord of the Rings - 16-17(2) = PARTIAL(1)
+The Giver - 16-17(2) = PARTIAL(1)
+The Call of the Wild - 12-13(0) = PARTIAL(1)
+Perks of Being a Wallflower - 16-17(2) = PARTIAL(3)
+A Series of Unfortunate Events - 14-15(1) = CORRECT(1)
+Harry Potter - 18-19(3) = INCORRECT(1)
+Indian in the Cupboard - 16-17(2) = PARTIAL(3)
+Three Musketeers - 12-13(0) = CORRECT(0)
+Fahrenheight 451 - 16-17(2) = CORRECT(2)
+
+old selected:
+7 correct, 3 partial, 0 incorrect
+score = 8.5/10
+
+A Wrinkle in Time - 16-17(2) = PARTIAL(3)
+The Sterkarm Handshake - 14-15(1) = CORRECT(1)
+The Aviators - 12-13(0) = CORRECT(0)
+Cheaper by the Dozen - 16-17(2) = CORRECT(2)
+Say You Love Me - 18-19(3) = CORRECT(3)
+Battlecry Forever - 12-13(0) = PARTIAL(1)
+The King's Shadow - 14-15(1) = PARTIAL(0)
+Peinlich, Peinlich, Alice - 14-15(1) = CORRECT(1)
+Dog in the Dungeon - 14-15(1) = CORRECT(1)
+Notes from a Small Island - 16-17(2) = CORRECT(2)
+
+Epoch 1/4
+Validation Accuracy: 0.3703
+              precision    recall  f1-score   support
+
+           0       0.15      0.56      0.23       232
+           1       0.27      0.23      0.25       799
+           2       0.42      0.28      0.34      1394
+           3       0.51      0.50      0.51      1534
+
+    accuracy                           0.37      3959
+   macro avg       0.34      0.39      0.33      3959
+weighted avg       0.41      0.37      0.38      3959
+
+Epoch 2/4
+Validation Accuracy: 0.4009
+              precision    recall  f1-score   support
+
+           0       0.17      0.53      0.26       232
+           1       0.28      0.28      0.28       799
+           2       0.47      0.28      0.35      1394
+           3       0.53      0.55      0.54      1534
+
+    accuracy                           0.40      3959
+   macro avg       0.36      0.41      0.36      3959
+weighted avg       0.44      0.40      0.40      3959
+
+Epoch 3/4
+Validation Accuracy: 0.3940
+              precision    recall  f1-score   support
+
+           0       0.18      0.37      0.25       232
+           1       0.28      0.37      0.32       799
+           2       0.44      0.32      0.37      1394
+           3       0.52      0.47      0.49      1534
+
+    accuracy                           0.39      3959
+   macro avg       0.36      0.38      0.36      3959
+weighted avg       0.42      0.39      0.40      3959
+
+Epoch 4/4
+Validation Accuracy: 0.4062
+              precision    recall  f1-score   support
+
+           0       0.21      0.25      0.23       232
+           1       0.29      0.44      0.35       799
+           2       0.43      0.35      0.38      1394
+           3       0.52      0.47      0.49      1534
+
+    accuracy                           0.41      3959
+   macro avg       0.36      0.38      0.36      3959
+weighted avg       0.43      0.41      0.41      3959
+
+Epoch 1/4
+Validation Accuracy: 0.3789
+              precision    recall  f1-score   support
+
+           0       0.16      0.45      0.24       242
+           1       0.31      0.19      0.24       828
+           2       0.40      0.10      0.16      1403
+           3       0.45      0.73      0.55      1486
+
+    accuracy                           0.38      3959
+   macro avg       0.33      0.37      0.30      3959
+weighted avg       0.39      0.38      0.33      3959
+
+Epoch 2/4
+Validation Accuracy: 0.4011
+              precision    recall  f1-score   support
+
+           0       0.20      0.33      0.25       242
+           1       0.33      0.23      0.27       828
+           2       0.41      0.20      0.27      1403
+           3       0.45      0.70      0.55      1486
+
+    accuracy                           0.40      3959
+   macro avg       0.35      0.37      0.33      3959
+weighted avg       0.40      0.40      0.37      3959
+
+Epoch 3/4
+Validation Accuracy: 0.4049
+              precision    recall  f1-score   support
+
+           0       0.23      0.30      0.26       242
+           1       0.31      0.43      0.36       828
+           2       0.42      0.28      0.33      1403
+           3       0.49      0.53      0.51      1486
+
+    accuracy                           0.40      3959
+   macro avg       0.36      0.38      0.37      3959
+weighted avg       0.42      0.40      0.40      3959
+
+Epoch 4/4
+Validation Accuracy: 0.3897
+              precision    recall  f1-score   support
+
+           0       0.22      0.24      0.23       242
+           1       0.29      0.51      0.37       828
+           2       0.41      0.30      0.35      1403
+           3       0.52      0.44      0.47      1486
+
+    accuracy                           0.39      3959
+   macro avg       0.36      0.37      0.35      3959
+weighted avg       0.42      0.39      0.39      3959
